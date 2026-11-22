@@ -2,7 +2,8 @@ name: Build LM ATTENDANCE apps
 
 # Builds the SUMOVAN LM ATTENDANCE phone app (APK) and Windows app from the tested
 # MM DOCs shells (jpasumovan-rgb/sumovan-apk and sumovan-desktop), only changing the
-# link, name and app ID. If the Apps Script /exec link changes, edit APP_URL below.
+# link, name, app ID and icon. If the Apps Script /exec link changes, edit APP_URL below.
+# Icon: a sumo rushing with a parcel (red / black / white), drawn in icon.svg below.
 
 on:
   push:
@@ -16,18 +17,172 @@ env:
   APP_URL: https://script.google.com/macros/s/AKfycbzGRtBzYACFZet9C7vs02VglR-PK8OoBv4IOfsiccYZ6_7F9uopXwD1_LzAwTX2LVOZ/exec
 
 jobs:
+  icons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Draw the icons
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y librsvg2-bin
+          cat > icon.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+            <defs>
+              <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#26262a"/>
+                <stop offset="1" stop-color="#0b0b0c"/>
+              </linearGradient>
+              <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd7b0"/>
+                <stop offset="1" stop-color="#f0b27f"/>
+              </linearGradient>
+              <linearGradient id="box" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff"/>
+                <stop offset="1" stop-color="#e6e6e6"/>
+              </linearGradient>
+            </defs>
+
+            <!-- background tile -->
+            <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+            <circle cx="286" cy="262" r="178" fill="#C8102E"/>
+
+            <!-- speed lines -->
+            <g stroke-linecap="round">
+              <line x1="34" y1="190" x2="118" y2="190" stroke="#ffffff" stroke-width="14" opacity="0.85"/>
+              <line x1="18" y1="240" x2="104" y2="240" stroke="#C8102E" stroke-width="16"/>
+              <line x1="40" y1="290" x2="110" y2="290" stroke="#ffffff" stroke-width="14" opacity="0.85"/>
+              <line x1="60" y1="338" x2="120" y2="338" stroke="#C8102E" stroke-width="12"/>
+            </g>
+
+            <!-- dust puffs behind back foot -->
+            <g fill="#ffffff" opacity="0.9">
+              <circle cx="112" cy="432" r="20"/>
+              <circle cx="84" cy="446" r="14"/>
+              <circle cx="140" cy="446" r="13"/>
+            </g>
+
+            <g stroke="#111113" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+              <!-- back leg (stretched behind) -->
+              <path d="M196 352 C170 384 150 404 128 420 C118 428 122 444 136 444 L176 444 C186 444 190 436 186 428 L212 384 Z" fill="url(#skin)"/>
+              <!-- front leg (bent forward) -->
+              <path d="M286 356 C300 384 318 404 344 412 L360 434 C364 444 356 452 346 452 L292 452 C282 452 278 442 284 434 L292 424 C272 410 258 392 250 370 Z" fill="url(#skin)"/>
+
+              <!-- body -->
+              <ellipse cx="246" cy="292" rx="112" ry="100" fill="url(#skin)"/>
+
+              <!-- mawashi (belt) -->
+              <path d="M140 316 C190 346 300 348 354 312 L356 350 C300 384 190 382 144 352 Z" fill="#111113"/>
+              <!-- front flap (sagari) -->
+              <path d="M236 358 L228 412 M252 360 L252 416 M268 358 L276 412" stroke="#111113" stroke-width="9" fill="none"/>
+              <!-- belt knot highlight -->
+              <path d="M150 326 C196 352 296 354 348 322" fill="none" stroke="#ffffff" stroke-width="6"/>
+
+              <!-- back arm (swinging behind) -->
+              <path d="M160 250 C130 262 112 286 108 312 C106 326 122 332 132 322 C142 302 158 290 176 284 Z" fill="url(#skin)"/>
+
+              <!-- head -->
+              <circle cx="300" cy="170" r="62" fill="url(#skin)"/>
+              <!-- hair cap -->
+              <path d="M242 160 C246 118 286 100 322 108 C350 114 366 134 364 160 C346 142 318 136 292 140 C270 144 254 152 242 160 Z" fill="#1d1a1f"/>
+              <!-- topknot (chonmage) -->
+              <ellipse cx="300" cy="96" rx="26" ry="15" fill="#1d1a1f"/>
+              <path d="M286 108 L292 118 M314 108 L308 118" stroke="#1d1a1f" stroke-width="8"/>
+              <!-- ear -->
+              <ellipse cx="258" cy="180" rx="11" ry="15" fill="url(#skin)"/>
+            </g>
+
+            <!-- face (determined) -->
+            <g stroke="#111113" stroke-linecap="round" fill="none">
+              <path d="M308 160 L338 152" stroke-width="8"/>
+              <path d="M314 174 Q324 168 334 172" stroke-width="7"/>
+              <path d="M318 204 Q334 212 348 200" stroke-width="7"/>
+            </g>
+            <circle cx="300" cy="196" r="10" fill="#ff9b85" opacity="0.8"/>
+            <!-- sweat drop -->
+            <path d="M232 128 C226 140 226 148 234 150 C242 148 242 140 232 128 Z" fill="#bfe6ff" stroke="#111113" stroke-width="4"/>
+
+            <!-- parcel held in front -->
+            <g stroke="#111113" stroke-width="8" stroke-linejoin="round">
+              <rect x="330" y="218" width="128" height="104" rx="10" fill="url(#box)"/>
+              <path d="M330 218 L350 196 L476 196 L458 218 Z" fill="#f4f4f4"/>
+              <path d="M458 218 L476 196 L476 298 L458 322 Z" fill="#cfcfcf"/>
+            </g>
+            <!-- tape -->
+            <rect x="384" y="218" width="22" height="104" fill="#C8102E"/>
+            <path d="M396 196 L414 196 L398 218 L380 218 Z" fill="#C8102E"/>
+            <!-- arrow -->
+            <path d="M418 262 L446 262 M434 250 L446 262 L434 274" stroke="#111113" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+            <!-- front arm hugging the parcel -->
+            <path d="M318 236 C344 228 366 236 372 254 C378 272 366 282 350 276 C336 270 324 266 312 268 Z"
+                  fill="url(#skin)" stroke="#111113" stroke-width="8" stroke-linejoin="round"/>
+            <path d="M300 290 C330 300 360 306 382 300 C396 296 398 312 386 318 C360 330 322 324 296 312 Z"
+                  fill="url(#skin)" stroke="#111113" stroke-width="8" stroke-linejoin="round"/>
+          </svg>
+          SVG
+          cat > make_icons.py <<'PY'
+          # Makes every app icon from icon.svg (the sumo rushing with a parcel).
+          # Needs rsvg-convert (librsvg2-bin). Output goes to ./icons
+          import os, re, subprocess
+
+          src = open('icon.svg', encoding='utf-8').read()
+          os.makedirs('icons', exist_ok=True)
+
+          def render(svg_text, out, size):
+              tmp = 'icons/_tmp.svg'
+              open(tmp, 'w', encoding='utf-8').write(svg_text)
+              subprocess.run(['rsvg-convert', '-w', str(size), '-h', str(size), tmp, '-o', out], check=True)
+              os.remove(tmp)
+
+          # 1) full icon (rounded blue tile) - desktop app + older Android launchers
+          render(src, 'icons/icon-512.png', 512)
+          for d, s in [('mdpi', 48), ('hdpi', 72), ('xhdpi', 96), ('xxhdpi', 144), ('xxxhdpi', 192)]:
+              render(src, 'icons/ic_launcher-%s.png' % d, s)
+
+          # 2) Android adaptive icon: background = blue gradient edge to edge
+          bg_rect = re.search(r'<rect x="0" y="0" width="512" height="512" rx="112" fill="url\(#bg\)"/>', src).group(0)
+          defs = re.search(r'<defs>.*?</defs>', src, re.S).group(0)
+          bg_svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">'
+                    + defs + '<rect x="0" y="0" width="512" height="512" fill="url(#bg)"/></svg>')
+          render(bg_svg, 'icons/ic_bg_layer.png', 432)
+
+          # 3) Android adaptive icon: foreground = the drawing only, shrunk into the safe zone
+          art = src.replace(bg_rect, '')
+          inner = art[art.index('</defs>') + len('</defs>'):art.rindex('</svg>')]
+          k = 0.64
+          fg_svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">' + defs
+                    + '<g transform="translate(%.1f %.1f) scale(%.2f)">' % (256 * (1 - k), 256 * (1 - k), k) + inner + '</g></svg>')
+          render(fg_svg, 'icons/ic_fg_layer.png', 432)
+          print('icons ready:', sorted(os.listdir('icons')))
+          PY
+          python3 make_icons.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icons
+          path: icons
+
   android:
+    needs: icons
     runs-on: ubuntu-latest
     steps:
       - name: Get the tested Android shell
         run: git clone --depth 1 https://github.com/jpasumovan-rgb/sumovan-apk src
-      - name: Point it to LM ATTENDANCE
+      - uses: actions/download-artifact@v4
+        with:
+          name: icons
+          path: icons
+      - name: Point it to LM ATTENDANCE (link, name, app ID, icon)
         working-directory: src
         run: |
           sed -i -E "s#^def APP_URL = .*#def APP_URL = \"${APP_URL}\"#" app/build.gradle
           sed -i "s#applicationId 'ph.sumovan.mmdocs'#applicationId 'ph.sumovan.lmattendance'#" app/build.gradle
           sed -i 's#android:label="MM DOCs"#android:label="LM ATTENDANCE"#' app/src/main/AndroidManifest.xml
           sed -i "s#SUMOVAN-MM-DOCs#SUMOVAN-LM-ATTENDANCE#" settings.gradle
+          R=app/src/main/res
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            cp ../icons/ic_launcher-$d.png $R/mipmap-$d/ic_launcher.png
+            cp ../icons/ic_launcher-$d.png $R/mipmap-$d/ic_launcher_round.png
+          done
+          cp ../icons/ic_bg_layer.png $R/drawable-nodpi/ic_bg_layer.png
+          cp ../icons/ic_fg_layer.png $R/drawable-nodpi/ic_fg_layer.png
           grep -n "APP_URL =\|applicationId" app/build.gradle
           grep -n "android:label" app/src/main/AndroidManifest.xml
       - uses: actions/setup-java@v4
@@ -52,11 +207,16 @@ jobs:
           make_latest: true
 
   windows:
+    needs: icons
     runs-on: windows-latest
     steps:
       - name: Get the tested Windows shell
         run: git clone --depth 1 https://github.com/jpasumovan-rgb/sumovan-desktop src
-      - name: Point it to LM ATTENDANCE
+      - uses: actions/download-artifact@v4
+        with:
+          name: icons
+          path: icons
+      - name: Point it to LM ATTENDANCE (link, name, app ID, icon)
         working-directory: src
         shell: pwsh
         run: |
@@ -67,15 +227,12 @@ jobs:
           $p = Get-Content package.json -Raw
           $p = $p.Replace('sumovan-mm-docs', 'sumovan-lm-attendance').Replace('SUMOVAN MM DOCs GENERATOR', 'SUMOVAN LM ATTENDANCE').Replace('SUMOVAN MM DOCs', 'SUMOVAN LM ATTENDANCE').Replace('ph.sumovan.mmdocs.desktop', 'ph.sumovan.lmattendance.desktop').Replace('SUMOVAN-MM-DOCs-Setup.exe', 'SUMOVAN-LM-ATTENDANCE-Setup.exe')
           Set-Content package.json $p -NoNewline
+          Copy-Item ..\icons\icon-512.png icon.png
           Select-String -Path main.js -Pattern 'APP_URL =|title:'
           Select-String -Path package.json -Pattern 'productName|artifactName|appId'
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Get the SUMO STRONG icon
-        working-directory: src
-        shell: pwsh
-        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jpasumovan-rgb/SUMOVAN-STRONG/main/icon-512.png" -OutFile icon.png
       - working-directory: src
         run: npm install
       - working-directory: src
